@@ -2,7 +2,7 @@
 
 *By Andrea Vedaldi and Andrew Zisserman*
 
-This is an [Oxford Visual Geometry Group](http://www.robots.ox.ac.uk/~vgg) computer vision practical, authored by [Andrea Vedaldi](http://www.robots.ox.ac.uk/~vedaldi/) and Andrew Zisserman (Release 2015a).
+This is an [Oxford Visual Geometry Group](http://www.robots.ox.ac.uk/~vgg) computer vision practical, authored by [Andrea Vedaldi](http://www.robots.ox.ac.uk/~vedaldi/) and Andrew Zisserman (Release 2017a).
 
 <img height=400px src="images/cover.png" alt="cover"/>
 
@@ -17,18 +17,20 @@ $$
    \newcommand{\by}{\mathbf{y}}
    \newcommand{\bz}{\mathbf{z}}
    \newcommand{\bw}{\mathbf{w}}
+   \newcommand{\bp}{\mathbf{p}}
    \newcommand{\cP}{\mathcal{P}}
    \newcommand{\cN}{\mathcal{N}}
    \newcommand{\vc}{\operatorname{vec}}
+   \newcommand{\vv}{\operatorname{vec}}
 $$
 
 ## Getting started
 
 Read and understand the [requirements and installation instructions](../overview/index.html#installation). The download links for this practical are:
 
-* Code and data: [practical-cnn-2015a.tar.gz](http://www.robots.ox.ac.uk/~vgg/share/practical-cnn-2015a.tar.gz)
-* Code only: [practical-cnn-2015a-code-only.tar.gz](http://www.robots.ox.ac.uk/~vgg/share/practical-cnn-2015a-code-only.tar.gz)
-* Data only: [practical-cnn-2015a-data-only.tar.gz](http://www.robots.ox.ac.uk/~vgg/share/practical-cnn-2015a-data-only.tar.gz)
+* Code and data: [practical-cnn-2017a.tar.gz](http://www.robots.ox.ac.uk/~vgg/share/practical-cnn-2017a.tar.gz)
+* Code only: [practical-cnn-2017a-code-only.tar.gz](http://www.robots.ox.ac.uk/~vgg/share/practical-cnn-2017a-code-only.tar.gz)
+* Data only: [practical-cnn-2017a-data-only.tar.gz](http://www.robots.ox.ac.uk/~vgg/share/practical-cnn-2017a-data-only.tar.gz)
 * [Git repository](https://github.com/vedaldi/practical-cnn) (for lab setters and developers)
 
 After the installation is complete, open and edit the script `exercise1.m` in the MATLAB editor. The script contains commented code and a description for all steps of this exercise, for [Part I](#part1) of this document. You can cut and paste this code into the MATLAB window to run it, and will need to modify it as you go through the session. Other files `exercise2.m`, `exercise3.m`, and `exercise4.m` are given for [Part II](#part2), [III](#part3), and [IV](part4).
@@ -55,6 +57,7 @@ $$
  \qquad \bx \mapsto \by.
 $$
 Open the `example1.m` file, select the following part of the code, and execute it in MATLAB (right button > `Evaluate selection` or `Shift+F7`).
+
 ```matlab
 % Read an example image
 x = imread('peppers.png') ;
@@ -65,6 +68,7 @@ x = im2single(x) ;
 % Visualize the input x
 figure(1) ; clf ; imagesc(x) 
 ```
+
 This should display an image of bell peppers in Figure 1:
 
 <img height=400px src="images/peppers.png" alt="peppers"/>
@@ -73,19 +77,23 @@ Use MATLAB `size` command to obtain the size of the array `x`. Note that the arr
 
 > **Question.** The third dimension of `x` is 3. Why?
 
-Now we will create a bank 10 of $5 \times 5 \times 3$ filters.
+Next, we create a bank of 10 filters of dimension $5 \times 5 \times 3$, initialising their coefficients randomly:
+
 ```matlab
 % Create a bank of linear filters
 w = randn(5,5,3,10,'single') ;
 ```
-The filters are in single precision as well. Note that `w` has four dimensions, packing 10 filters. Note also that each filter is not flat, but rather a volume with three layers. The next step is applying the filter to the image. This uses the `vl_nnconv` function from MatConvNet:
+
+The filters are in single precision as well. Note that `w` has four dimensions, packing 10 filters. Note also that each filter is not flat, but rather a volume containing three slices. The next step is applying the filter to the image. This uses the `vl_nnconv` function from MatConvNet:
+
 ```matlab
 % Apply the convolution operator
 y = vl_nnconv(x, w, []) ;
 ```
+
 **Remark:** You might have noticed that the third argument to the `vl_nnconv` function is the empty matrix `[]`. It can be otherwise used to pass a vector of bias terms to add to the output of each filter.
 
-The variable `y` contains the output of the convolution. Note that the filters are three-dimensional, in the sense that it operates on a map $\bx$ with $K$ channels. Furthermore, there are $K'$ such filters, generating a $K'$ dimensional map $\by$ as follows
+The variable `y` contains the output of the convolution. Note that the filters are three-dimensional. This is because they operate on a tensor $\bx$ with $K$ channels. Furthermore, there are $K'$ such filters, generating a $K'$ dimensional map $\by$ as follows:
 $$
 y_{i'j'k'} = \sum_{ijk} w_{ijkk'} x_{i+i',j+j',k}
 $$
@@ -99,6 +107,7 @@ $$
 > **Task:** check that the size of the variable `y` matches your calculations.
 
 We can now visualise the output `y` of the convolution. In order to do this, use the [`vl_imarraysc`](http://www.vlfeat.org/matlab/vl_imarraysc.html) function to display an image for each feature channel in `y`:
+
 ```matlab
 % Visualize the output y
 figure(2) ; clf ; vl_imarraysc(y) ; colormap gray ;
@@ -107,12 +116,15 @@ figure(2) ; clf ; vl_imarraysc(y) ; colormap gray ;
 > **Question:** Study the feature channels obtained. Most will likely contain a strong response in correspondences of edges in the input image `x`. Recall that `w` was obtained by drawing random numbers from a Gaussian distribution. Can you explain this phenomenon?
 
 So far filters preserve the resolution of the input feature map. However, it is often useful to *downsample the output*. This can be obtained by using the `stride` option in `vl_nnconv`:
+
 ```matlab
 % Try again, downsampling the output
 y_ds = vl_nnconv(x, w, [], 'stride', 16) ;
 figure(3) ; clf ; vl_imarraysc(y_ds) ; colormap gray ;
 ```
+
 As you should have noticed in a question above, applying a filter to an image or feature map interacts with the boundaries, making the output map smaller by an amount proportional to the size of the filters. If this is undesirable, then the input array can be padded with zeros by using the `pad` option:
+
 ```matlab
 % Try padding
 y_pad = vl_nnconv(x, w, [], 'pad', 4) ;
@@ -122,6 +134,7 @@ figure(4) ; clf ; vl_imarraysc(y_pad) ; colormap gray ;
 > **Task:** Convince yourself that the previous code's output has different boundaries compared to the code that does not use padding. Can you explain the result?
 
 In order to consolidate what has been learned so far, we will now design a filter by hand:
+
 ```matlab
 w = [0  1 0 ;
      1 -4 1 ;
@@ -135,23 +148,25 @@ imagesc(y_lap) ; title('filter output') ;
 subplot(1,2,2) ;
 imagesc(-abs(y_lap)) ; title('- abs(filter output)') ;
 ```
+
 > **Questions:**
 > 
 > * What filter have we implemented?
 > * How are the RGB colour channels processed by this filter?
 > * What image structure are detected?
 
-### Part 1.2: non-linear gating {#part1.2}
+### Part 1.2: non-linear activation functions {#part1.2}
 
 As we stated in the introduction, CNNs are obtained by composing several different functions. In addition to the linear filters shown in the [previous part](#part1.1), there are several non-linear operators as well.
 
 > **Question:** Some of the functions in a CNN *must* be non-linear. Why?
 
-The simplest non-linearity is obtained by following a linear filter by a *non-linear gating function*, applied identically to each component (i.e. point-wise) of a feature map. The simplest such function is the *Rectified Linear Unit (ReLU)*
+The simplest non-linearity is obtained by following a linear filter by a *non-linear activation function*, applied identically to each component (i.e. point-wise) of a feature map. The simplest such function is the *Rectified Linear Unit (ReLU)*
 $$
   y_{ijk} = \max\{0, x_{ijk}\}.
 $$
-This function is implemented by `vl_relu`; let's try this out:
+This function is implemented by `vl_nnrelu`; let's try this out:
+
 ```matlab
 w = single(repmat([1 0 -1], [1, 1, 3])) ;
 w = cat(4, w, -w) ;
@@ -175,10 +190,12 @@ $$
    y_{ijk} = \max \{ y_{i'j'k} : i \leq i' < i+p, j \leq j' < j + p \}
 $$
 Max pooling is implemented by the `vl_nnpool` function. Try this now:
+
 ```matlab
 y = vl_nnpool(x, 15) ;
 figure(6) ; clf ; imagesc(y) ;
 ```
+
 > **Question:** look at the resulting image. Can you interpret the result?
 
 The function `vl_nnpool` supports subsampling and padding just like `vl_nnconv`. However, for max-pooling feature maps are padded with the value $-\infty$ instead of 0. Why?
@@ -194,6 +211,7 @@ where $G(k) = \left[k - \lfloor \frac{\rho}{2} \rfloor, k + \lceil \frac{\rho}{2
 > **Task:** Understand what this operator is doing. How would you set $\kappa$, $\alpha$ and $\beta$ to achieve simple $L^2$ normalisation?
 
 Now let's try this out:
+
 ```matlab
 rho = 5 ;
 kappa = 0 ;
@@ -230,69 +248,105 @@ where $\eta_t \in \mathbb{R}_+$ is the *learning rate*.
 
 ### Part 2.1: the theory of back-propagation
 
-The basic computational problem to solve is the calculation of the gradient of the function with respect to the parameter $\bw$. Since $f$ is the composition of several functions, the key ingredient is the *chain rule*:
+Training CNNs is normally done using a gradient-based optimization method. The CNN $f$ is the composition of $L$ layers $f_l$ each with parameters $\bw_l$, which in the simplest case of a chain looks like:
 $$
-\begin{align}
- \frac{\partial f}{\partial \bw_l} &= 
-  \frac{\partial}{\partial \bw_l}
-  f_L(\dots f_2(f_1(\bx;\bw_1);\bw_2)\dots),\bw_{L})
-  \\
-  &= 
-  \frac{\partial \vc f_L}{\partial \vc\bx_L^\top}
-  \frac{\partial \vc f_{L-1}}{\partial \vc\bx_{L-1}^\top}
-  \dots
-  \frac{\partial \vc f_{l+1}}{\partial \vc\bx_{l+1}^\top}
-  \frac{\partial \vc f_l}{\partial \bw_l^\top}
-\end{align}
+ \bx_0
+ \longrightarrow
+ \underset{\displaystyle\underset{\displaystyle\bw_1}{\uparrow}}{\boxed{f_1}}
+ \longrightarrow
+ \bx_1
+ \longrightarrow
+ \underset{\displaystyle\underset{\displaystyle\bw_2}{\uparrow}}{\boxed{f_2}}
+ \longrightarrow
+ \bx_2
+ \longrightarrow
+ \dots
+ \longrightarrow
+ \bx_{L-1}
+ \longrightarrow
+ \underset{\displaystyle\underset{\displaystyle\bw_L}{\uparrow}}{\boxed{f_L}}
+ \longrightarrow
+ \bx_L
 $$
-The notation requires some explanation. Recall that each function $f_l$ is a map from a $M\times N\times K$ array to a $M' \times N' \times K'$ array. The operator $\vc$ *vectorises* such arrays by stacking their elements in a column vector (the stacking order is arbitrary but conventionally column-major). The symbol $\partial \vc f_l / \partial \vc \bx_l^\top$ then denotes the derivative of a column vector of output variables by a row vector of input variables. Note that $\bw_l$ is already assumed to be a column vector so it does not require explicit vectorisation.
+During learning, the last layer of the network is the *loss function* that should be minimized. Hence, the output $\bx_L = x_L$ of the network is a **scalar** quantity (a single number).
 
-> **Questions:** Make sure you understand the structure of this formula and answer the following:
-> 
-> * $\partial \vc f_l / \partial \vc \bx_l^\top$ is a matrix. What are its dimensions?
-> * The formula can be rewritten with a slightly different notation by replacing the symbols $f_l$ with the symbols $\bx_{l+1}$. If you do so, do you notice any formal cancellation?
-> * The formula only includes the derivative symbols. However, these derivatives must be computed at a well defined point. What is this point?
-
-To apply the chain rule we must be able to compute, for each function $f_l$, its derivative with respect to the parameters $\bw_l$ as well as its input $\bx_l$. While this could be done naively, a problem is the very high dimensionality of the matrices involved in this calculation as these are $M'N'K' \times MNK$ arrays. We will now introduce a ``trick'' that allows this to be reduced to working with $MNK$ numbers only and which will yield the *back-propagation algorithm*. 
-
-The key observation is that we are not after $\partial \vc f_l / \partial \bw_l^\top$ but after $\partial f/ \partial\bw_l^\top$:
+The gradient is easily computed using using the **chain rule**. If *all* network variables and parameters are scalar, this is given by:
 $$
- \frac{\partial f}{\partial\bw_l^\top}
+ \frac{\partial f}{\partial w_l}(x_0;w_1,\dots,w_L)
  =
- \frac{\partial g_{l+1}}{\partial \vc \bx_{l+1}^\top}
-  \frac{\partial \vc f_l}{\partial \bw_l^\top}
+ \frac{\partial f_L}{\partial x_{L-1}}(x_{L-1};w_L) \times
+ \cdots
+ \times
+ \frac{\partial f_{l+1}}{\partial x_l}(x_l;w_{l+1}) \times
+ \frac{\partial f_{l}}{\partial w_l}(x_{l-1};w_l)
 $$
-where $g_{l+1} = f_L \circ \dots \circ f_{l+1}$ is the ``tail'' of the CNN.
+With tensors, however, there are some complications. Consider for instance the derivative of a function $\by=f(\bx)$ where both $\by$ and $\bx$ are tensors; this is formed by taking the derivative of each scalar element in the output $\by$ with respect to each scalar element in the input $\bx$. If $\bx$ has dimensions $H \times W \times C$ and $\by$ has dimensions $H' \times W' \times C'$, then the derivative contains $HWCH'W'C'$ elements, which is often unmanageable (in the order of several GBs of memory for a single derivative).
 
-> **Question:** Explain why the dimensions of the vectors $\partial g_{l+1}/\partial \vc \bx_{l+1}$ and $\partial f/\partial \bw_{l}$ equals the number of elements in $\bx_{l+1}$ and $\bw_l$ respectively. Hence, in particular, the symbol $\partial g_{l+1}/\partial \bx_{l+1}$ (without vectorisation) denotes an array with the same size of $\bx_{l+1}$.
-> 
-> **Hint:** recall that the last layer is the loss.
+Note that all intermediate derivatives in the chain rule may be affected by this size explosion except for the derivative of the network output that, being the loss, is a scalar.
 
-Hence the algorithm can focus on computing the derivatives of $g_{l}$ instead of $f_{l}$ which are far lower-dimensional. To see how this can be done iteratively, decompose $g_l$ as:
+> **Question:** The output derivatives have the same size as the parameters in the network. Why?
+
+**Back-propagation** allows computing the output derivatives in a memory-efficient manner. To see how, the first step is to generalize the equation above to tensors using a matrix notation. This is done by converting tensors into vectors by using the $\vv$ (stacking)[^stacking] operator:
 $$
- \bx_{l}
- \longrightarrow 
- \underset{\displaystyle\underset{\displaystyle\bw_l}{\uparrow}}{\boxed{f_l}} 
- \longrightarrow
- \bx_{l+1}  
- \longrightarrow 
- \boxed{g_{l+1}}
- \longrightarrow
- \bx_{L}
+ \frac{\partial \vv f}{\partial \vv^\top \bw_l}
+ =
+ \frac{\partial \vv f_L}{\partial \vv^\top \bx_L} \times
+ \cdots
+ \times
+ \frac{\partial \vv f_{l+1}}{\partial \vv^\top \bx_l} \times
+ \frac{\partial \vv f_{l}}{\partial \vv^\top \bw_l}
 $$
-Then the key of the iteration is obtaining the derivatives for layer $l$ given the ones for layer $l+1$:
+In order to make this computation memory efficient, we *project* the derivative with respect to a tensor $\bp_L = 1$ as follows:
+$$
+ (\vv \bp_L)^\top \times \frac{\partial \vv f}{\partial \vv^\top \bw_l}
+ =
+ (\vv \bp_L)^\top
+ \times
+ \frac{\partial \vv f_L}{\partial \vv^\top \bx_L} \times
+ \cdots
+ \times
+ \frac{\partial \vv f_{l+1}}{\partial \vv^\top \bx_l} \times
+ \frac{\partial \vv f_{l}}{\partial \vv^\top \bw_l}
+$$
+Note that $\bp_L=1$ has the same dimension as $\bx_L$ (the scalar loss) and, being equal to 1, multiplying it to the left of the expression does not change anything. Things are more interesting when products are evaluated from the left to the right, i.e. *backward from the output to the input* of the CNN. The first such factors is given by:
+\begin{equation}
+\label{e:factor}
+ (\vv \bp_{L-1})^\top = (\vv \bp_L)^\top
+ \times
+ \frac{\partial \vv f_L}{\partial \vv^\top \bx_L}
+\end{equation}
+This results in a new projection vector $\bp_{L-1}$, which can then be multiplied from the left to obtain $\bp_{L-2}$ and so on. The last projection $\bp_l$ is the desired derivative. Crucially, each projection $\bp_q$ takes as much memory as the corresponding variable $\bx_q$.
 
-* Input:
-  * the derivative $\partial g_{l+1}/\partial \bx_{l+1}$.
-* Output:
-  * the derivative $\partial g_{l}/\partial \bx_{l}$
-  * the derivative  $\partial g_{l}/\partial \bw_{l}$
+Some might have noticed that, while projections remain small, each factor \eqref{e:factor} does contain one of the large derivatives that we cannot compute explicitly. The trick is that CNN toolboxes contain code that can compute the projected derivatives without explicitly computing this large factor. In particular, for any building block function $\by=f(\bx;\bw)$, a toolbox such as MatConvNet will implement:
 
-> **Question:** Suppose that $f_l$ is the function $\bx_{l+1} = A \bx_{l}$ where $\bx_{l}$ and $\bx_{l+1}$ are column vectors. Suppose that $B = \partial g_{l+1}/\partial \bx_{l+1} $ is given. Derive an expression for $C = \partial g_{l}/\partial \bx_{l}$ and an expression for $D =  \partial g_{l}/\partial \bw_{l}$.
+* A **forward mode** computing the function $\by=f(\bx;\bw)$.
+* A **backward mode** computing the derivatives of the projected function $\langle \bp, f(\bx;\bw) \rangle$ with respect to the input $\bx$ and parameter $\bw$:
+
+$$
+\frac{\partial}{\partial \bx} \left\langle \bp, f(\bx;\bw) \right\rangle,
+\qquad
+\frac{\partial}{\partial \bw} \left\langle \bp, f(\bx;\bw) \right\rangle.
+$$
+
+For example, this is how this looks for the convolution operator:
+
+```.language-matlab
+y = vl_nnconv(x,w,b) ; % forward mode (get output)
+p = randn(size(y), 'single') ; % projection tensor (arbitrary)
+[dx,dw,db] = vl_nnconv(x,w,b,p) ; % backward mode (get projected derivatives)
+```
+
+and this is how it looks for ReLU operator:
+
+```.language-matlab
+y = vl_nnrelu(x) ;
+p = randn(size(y), 'single') ;
+dx = vl_nnrelu(x,p) ;
+```
 
 ### Part 2.1: using back-propagation in practice
 
-A key feature of MatConvNet and similar neural network packages is the ability to support back-propagation. In order to do so, lets focus on a single computational block $f$, followed by a function $g$:
+To see how backpropagation is used in practice, focus on a computational block $f$, followed by a function $g$:
 $$
  \bx
  \longrightarrow 
@@ -304,7 +358,10 @@ $$
  \longrightarrow
  z
 $$
-where *$z$ is assumed to be a scalar*. Then each computation block (for example `vl_nnconv` or `vl_nnpool`) can compute $\partial z / \partial \bx$ and $\partial z / \partial \bw$ given as input $\bx$ and $\partial z / \partial \by$. Let's put this into practice:
+Here $g$ lumps the rest of the network, from $\by$ to the final scalar output $z$. The goal is to compute the derivatives $\partial z / \partial \bx$ and $\partial z / \partial \bw$ given the derivative $\bp = \partial z / \partial \by$ of the rest of the network $g$.
+
+Let's put this into practice by letting $f$ be a convolutional layer and by filling $\bp = \partial z / \partial \by$ with random values for the sake of the example:
+
 ```matlab
 % Read an example image
 x = im2single(imread('peppers.png')) ;
@@ -322,6 +379,7 @@ dzdy = randn(size(y), 'single') ;
 > **Task:** Run the code above and check the dimensions of `dzdx` and `dzdy`. Does this matches your expectations?
 
 An advantage of this modular view is that new building blocks can be coded and added to the architecture in a simple manner. However, it is easy to make mistakes in the calculation of complex derivatives. Hence, it is a good idea to verify results numerically. Consider the following piece of code:
+
 ```matlab
 % Check the derivative numerically
 ex = randn(size(x), 'single') ;
@@ -349,6 +407,7 @@ fprintf(...
 > * Create a new version of this code to test the derivative calculation with respect to $\bw$.
 
 We are now ready to build our first elementary CNN, composed of just two layers, and to compute its derivatives:
+
 ```matlab
 % Parameters of the CNN
 w1 = randn(5,5,3,10,'single') ;
@@ -366,6 +425,7 @@ dzdx3 = randn(size(x3), 'single') ;
 dzdx2 = vl_nnpool(x2, rho2, dzdx3) ;
 [dzdx1, dzdw1] = vl_nnconv(x1, w1, [], dzdx2) ;
 ```
+
 > **Question:** Note that the last derivative in the CNN is `dzdx3`. Here, for the sake of the example, this derivative is initialised randomly. In a practical application, what would this derivative represent?
 
 We can now use the same technique as before to check that the derivative computed through back-propagation are correct.
@@ -409,6 +469,7 @@ In the rest of the section we will learn the CNN parameters in order to extract 
 ### Part 3.1: training data and labels
 
 The first step is to load the image `data/dots.jpg` and to use the supplied `extractBlackBlobs` function to extract all the black dots in the image.
+
 ```matlab
 % Load an image
 im = rgb2gray(im2single(imread('data/dots.jpg'))) ;
@@ -416,7 +477,9 @@ im = rgb2gray(im2single(imread('data/dots.jpg'))) ;
 % Compute the location of black blobs in the image
 [pos,neg] = extractBlackBlobs(im) ;
 ```
+
 The arrays `pos` and `neg` contain now pixel labels and  will be used as *annotations* for the supervised training of the CNN. These annotations can be visualised as follows:
+
 ```matlab
 figure(1) ; clf ; 
 subplot(1,3,1) ; imagesc(im) ; axis equal ; title('image') ;
@@ -435,6 +498,7 @@ colormap gray ;
 ### Part 3.2: image preprocessing
 
 Before we attempt to train the CNN, the image is pre-processed to remove its median value. It is also smoothed by applying a Gaussian kernel of standard deviation 3 pixels:
+
 ```matlab
 % Pre-smooth the image
 im = vl_imsmooth(im,3) ;
@@ -442,6 +506,7 @@ im = vl_imsmooth(im,3) ;
 % Subtract median value
 im = im - median(im(:)) ;
 ```
+
 We will come back to this preprocessing steps later.
 
 ### Part 3.3: learning with gradient descent
@@ -468,7 +533,7 @@ $$
 > - What can you say about the score of each pixel if $\lambda=0$ and $E(\bw,b) =0$?
 > - Note that the objective enforces a *margin* between the scores of the positive and negative pixels. How much is this margin?
 
-We can now train the CNN by minimising the objective function with respect to $\bw$ and $b$. We do so by using an algorithm called *gradient descent with momentum*.  Given the current solution $(\bw_t,b_t)$ and update it , this is updated to $(\bw_{t+1},b_t)$ by following the direction of fastest descent as given by the negative gradient $-\nabla E(\bw_t,b_t)$ of the objective. However, gradient updates are smoothed by considering a *momentum* term $(\bar\bw_{t}, \bar\mu_t)$, yielding the update equations
+We can now train the CNN by minimising the objective function with respect to $\bw$ and $b$. We do so by using an algorithm called *gradient descent with momentum*.  Given the current solution $(\bw_t,b_t)$, this is updated to $(\bw_{t+1},b_{t+1})$ by following the direction of fastest descent of the objective $E(\bw_t,b_t)$ as given by the negative gradient $-\nabla E$. However, gradient updates are smoothed by considering a *momentum* term $(\bar\bw_{t}, \bar\mu_t)$, yielding the update equations
 $$
  \bar\bw_{t+1} \leftarrow \mu \bar\bw_t + \eta \frac{\partial E}{\partial \bw_t},
  \qquad
@@ -482,7 +547,8 @@ and similarly for the bias term. Here $\mu$ is the *momentum rate* and $\eta$ th
 > - The learning rate establishes how fast the algorithm will try to minimise the objective function. Can you see any problem with a large learning rate?
 
 The parameters of the algorithm are set as follows:
-```Malta
+
+```matlab
 numIterations = 500 ;
 rate = 5 ;
 momentum = 0.9 ;
@@ -494,12 +560,12 @@ plotPeriod = 10 ;
 > 
 > - Inspect the code in the file  `exercise3.m`. Convince yourself that the code is implementing the algorithm described above. Pay particular attention at the forward and backward passes as well as at how the objective function and its derivatives are computed.
 > - Run the algorithm and observe the results. Then answer the following questions:
->   * The learned filter should resemble the discretisation of a well-known differential operator. Which one? 
->   * What is the average of the filter values compared to the average of the absolute values?
+>     * The learned filter should resemble the discretisation of a well-known differential operator. Which one? 
+>     * What is the average of the filter values compared to the average of the absolute values?
 > - Run the algorithm again and observe the evolution of the histograms of the score of the positive and negative pixels in relation to the values 0 and 1. Answer the following:
->   * Is the objective function minimised monotonically?
->   * As the histograms evolve, can you identify at least two "phases" in the optimisation?
->   * Once converged, do the score distribute in the manner that you would expect?
+>     * Is the objective function minimised monotonically?
+>     * As the histograms evolve, can you identify at least two "phases" in the optimisation?
+>     * Once converged, do the score distribute in the manner that you would expect?
 >
 > **Hint:** the `plotPeriod` option can be changed to plot the diagnostic figure with a higher or lower frequency; this can significantly affect the speed of the algorithm.
 
@@ -548,6 +614,7 @@ In this part we will learn a CNN to recognise images of characters.
 ### Part 4.1: prepare the data
 
 Open up `exercise4.m` and execute Part 4.1. The code loads a structure `imdb` containing images of the characters *a, b, ..., z* rendered using approximately 931 fonts downloaded from the [Google Fonts Project](https://www.google.com/fonts). Look at the `imdb.images` substructure:
+
 ```matlab
 >> imdb.images
 ans = 
@@ -556,7 +623,8 @@ ans =
     label: [1x24206 double]
       set: [1x24206 double]
 ```
-These are stored as the array `imdb.images.id` is a 24,206-dimensional vector of numeric IDs for each of the 24,206 character images in the dataset. `imdb.images.data` contains a $32 \times 32$ image for each character, stored as a slide of a $32\times 32\times 24,\!206$-dimensional array. `imdb.images.label` is a vector of image labels, denoting which one of the 26 possible characters it is. `imdb.images.set` is equal to 1 for each image that should be used to train the CNN and to 2 for each image that should be used for validation.
+
+These are stored as the array `imdb.images.id` is a 29,198-dimensional vector of numeric IDs for each of the 29,198  character images in the dataset. `imdb.images.data` contains a $32 \times 32$ image for each character, stored as a slide of a $32\times 32\times 29,\!198$-dimensional array. `imdb.images.label` is a vector of image labels, denoting which one of the 26 possible characters it is. `imdb.images.set` is equal to 1 for each image that should be used to train the CNN and to 2 for each image that should be used for validation.
 
 <img height=400px src="images/chars.png" alt="cover"/>
 
@@ -594,6 +662,7 @@ where $c_{ij}$ is the index of the ground-truth class at spatial location $(i,j)
 ### Part 4.3: train and evaluate the CNN
 
 We are now ready to train the CNN. To this end we use the example SGD implementation in MatConvNet (`examples/cnn_train.m`). This function requires some options:
+
 ```matlab
 trainOpts.batchSize = 100 ;
 trainOpts.numEpochs = 100 ;
@@ -603,28 +672,35 @@ trainOpts.learningRate = 0.001 ;
 trainOpts.numEpochs = 15 ;
 trainOpts.expDir = 'data/chars-experiment' ;
 ```
+
 This says that the function will operate on SGD mini-batches of 100 elements,  it will run for 15 epochs (passes through the data),  it will continue from the last epoch if interrupted, if will *not* use the GPU, it will use a learning rate of 0.001, and it will save any file in the `data/chars-experiment` subdirectory.
 
 Before the training starts, the average image value is subtracted:
+
 ```
 % Take the average image out
 imageMean = mean(imdb.images.data(:)) ;
 imdb.images.data = imdb.images.data - imageMean ;
 ```
+
 This is similar to what we have done in Part 3.
 
 The training code is called as follows:
+
 ```matlab
 % Call training function in MatConvNet
 [net,info] = cnn_train(net, imdb, @getBatch, trainOpts) ;
 ```
+
 Here the key, in addition to the `trainOpts` structure, is the `@getBatch` function handle. This is how `cnn_train` obtains a copy of the data to operate on. Examine this function (see the bottom of the `exercise4.m` file):
+
 ```matlab
 function [im, labels] = getBatch(imdb, batch)
 im = imdb.images.data(:,:,batch) ;
 im = 256 * reshape(im, 32, 32, 1, []) ;
 labels = imdb.images.label(1,batch) ;
 ```
+
 The function extracts the $m$ images corresponding to the vector of indexes `batch`. It also reshape them as a $32\times 32\times 1\times m$ array (as this is the format expected by the MatConvNet functions) and multiplies the values by 256 (the resulting values match the network initialisation and learning parameters). Finally, it also returns a vector of labels, one for each image in the batch.
 
 > **Task:** Run the learning code and examine the plots that are produced. As training completes answer the following questions:
@@ -635,12 +711,14 @@ The function extracts the $m$ images corresponding to the vector of indexes `bat
 > 4.  Both the top-1 and top-5 prediction errors are plotted. What do they mean? What is the difference?
 
 Once training is finished, the model is saved back:
+
 ```matlab
 % Save the result for later use
 net.layers(end) = [] ;
 net.imageMean = imageMean ;
 save('data/chars-experiment/charscnn.mat', '-struct', 'net') ;
 ```
+
 Note that we remember the `imageMean` for later use. Note also that the softmaxloss layer is *removed* from the network before saving.
 
 
@@ -649,10 +727,11 @@ Note that we remember the `imageMean` for later use. Note also that the softmaxl
 The next step is to glance at the filters that have been learned:
 ```matlab
 figure(2) ; clf ; colormap gray ;
-vl_imarraysc(squeeze(net.layers{1}.filters),'spacing',2)
+vl_imarraysc(squeeze(net.layers{1}.weights{1}),'spacing',2)
 axis equal ;
 title('filters in the first layer') ;
 ```
+
 > **Task:** what can you say about the filters?
 
 ### Part 4.5: apply the model
@@ -715,10 +794,7 @@ A key challenge in deep learning is the sheer amount of computation required to 
 In MatConvNet this is almost trivial as it builds on the easy-to-use GPU support in MATLAB. You can follow this list of steps to try it out:
 
 1. Clear the models generated and cached in the previous steps. To do this, rename or delete the directories `data/characters-experiment` and `data/characters-jit-experiment`.
-2. Make sure that MatConvNet is compiled with GPU support. To do this, use
-    ````
-    > setup('useGpu', true) ;
-    ````
+2. Make sure that MatConvNet is compiled with GPU support. To do this, use `setup('useGpu', true)`.
 3. Try again training the model of `exercise4.m` switching to `true` the `useGpu` flag.
 
 > **Task:** Follow the steps above and note the speed of training. How many images per second can you process now?
@@ -736,6 +812,7 @@ Several [pertained models](http://www.vlfeat.org/matconvnet/pretrained/) can be 
 ### Part 5.1:  load a pre-trained model
 
 The first step is to load the model itself. This is in the format of the `vl_simplenn` CNN wrapper, and ships as a MATLAB `.mat` file:
+
 ```matlab
 net = load('data/imagenet-vgg-verydeep-16.mat') ;
 vl_simplenn_display(net) ;
@@ -749,6 +826,7 @@ vl_simplenn_display(net) ;
 ### Part 5.2: use the model to classify an image
 
 We can now use the model to classify an image. We start from `peppers.png`, a MATLAB stock image:
+
 ```matlab
 % obtain and preprocess an image
 im = imread('peppers.png') ;
@@ -756,14 +834,18 @@ im_ = single(im) ; % note: 255 range
 im_ = imresize(im_, net.normalization.imageSize(1:2)) ;
 im_ = im_ - net.normalization.averageImage ;
 ```
+
 The code normalises the image in a format compatible with the model `net`. This amounts to: converting the image to `single` format (but with range 0,...,255 rather than [0, 1] as typical in MATLAB), resizing the image to a fixed size, and then subtracting an average image.
 
 It is now possible to call the CNN:
+
 ```matlab
 % run the CNN
 res = vl_simplenn(net, im_) ;
 ```
+
 As usual, `res` contains the results of the computation, including all intermediate layers. The last one can be used to perform the classification:
+
 ``` matlab
 % show the classification result
 scores = squeeze(gather(res(end).x)) ;
@@ -773,6 +855,7 @@ figure(1) ; clf ; imagesc(im) ;
 title(sprintf('%s (%d), score %.3f',...
   net.classes.description{best}, best, bestScore)) ;
 ```
+
 That completes this practical.
 
 ## Links and further work
@@ -787,6 +870,10 @@ That completes this practical.
 
 ## History
 
+* Used in the Oxford AIMS CDT, 2016-17.
+* Used in the Oxford AIMS CDT, 2015-16.
 * Used in the Oxford AIMS CDT, 2014-15.
 
 [^lattice]: A two-dimensional *lattice* is a discrete grid embedded in $R^2$, similar for example to a checkerboard.
+
+[^stacking]: The stacking of a tensor $\bx \in\mathbb{R}^{H\times W\times C}$ is the vector $$ \vv \bx= \begin{bmatrix} x_{111}\\ x_{211} \\ \vdots \\ x_{H11} \\ x_{121} \\\vdots \\ x_{HWC} \end{bmatrix}.$$
