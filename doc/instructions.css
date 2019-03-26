@@ -1,0 +1,15 @@
+blockquote {
+    border: 5px solid black;
+    padding-left: 2em;
+    background-color: #FFCC00
+}
+
+
+div.sourceCode {
+    margin-left: 1em;
+    border: 1px inset black;
+    background-color: #EEE;
+    padding: 0.5em;
+    margin-bottom: 0.5em;
+    width: 80ch;
+}
