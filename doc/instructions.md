@@ -1,43 +1,44 @@
-# VGG Convolutional Neural Networks Practical
+---
+title: Convolutional Neural Networks Practical
+author: Andrea Vedaldi and Andrew Zisserman
+---
 
-*By Andrea Vedaldi and Andrew Zisserman*
+\newcommand{\bx}{\mathbf{x}}
+\newcommand{\by}{\mathbf{y}}
+\newcommand{\bz}{\mathbf{z}}
+\newcommand{\bw}{\mathbf{w}}
+\newcommand{\bp}{\mathbf{p}}
+\newcommand{\cP}{\mathcal{P}}
+\newcommand{\cN}{\mathcal{N}}
+\newcommand{\vc}{\operatorname{vec}}
+\newcommand{\vv}{\operatorname{vec}}
 
-This is an [Oxford Visual Geometry Group](http://www.robots.ox.ac.uk/~vgg) computer vision practical, authored by [Andrea Vedaldi](http://www.robots.ox.ac.uk/~vedaldi/) and Andrew Zisserman (Release 2017a).
+This is an [Oxford Visual Geometry Group](http://www.robots.ox.ac.uk/~vgg)
+computer vision practical, authored by
+[Andrea Vedaldi](http://www.robots.ox.ac.uk/~vedaldi/) and Andrew Zisserman
+(Release 2017a), with edits by <a
+href="http://www.cs.grinnell.edu/~weinman">Jerod Weinman</a> for <a
+href="http://www.cs.grinnell.edu/~weinman/courses/CSC262/2019S">CSC
+262-Computer Vision</a>.
 
 <img height=400px src="images/cover.png" alt="cover"/>
 
-*Convolutional neural networks* are an important class of learnable representations applicable, among others, to numerous computer vision problems. Deep CNNs, in particular, are composed of several layers of processing, each involving linear as well as non-linear operators, that are learned jointly, in an end-to-end manner, to solve a particular tasks. These methods are now the dominant approach for feature extraction from audiovisual and textual data.
+*Convolutional neural networks* are an important class of learnable representations applicable, among others, to numerous computer vision problems. Deep CNNs, in particular, are composed of several layers of processing, each involving linear as well as non-linear operators, that are learned jointly, in an end-to-end manner, to solve particular tasks. These methods are now the dominant approach for feature extraction from audiovisual and textual data.
 
-This practical explores the basics of learning (deep) CNNs. The first part introduces typical CNN building blocks, such as ReLU units and linear filters, with a particular emphasis on understanding back-propagation. The second part looks at learning two basic CNNs. The first one is a simple non-linear filter capturing particular image structures, while the second one is a network that recognises typewritten characters (using a variety of different fonts). These examples illustrate the use of stochastic gradient descent with momentum, the definition of an objective function, the construction of mini-batches of data, and data jittering. The last part shows how powerful CNN models can be downloaded off-the-shelf and used directly in applications, bypassing the expensive training process.
+This lab explores the basics of learning (deep) CNNs. The first part introduces typical CNN building blocks, such as ReLU units and linear filters, with a particular emphasis on understanding back-propagation. The second part looks at learning two basic CNNs. The first network is a simple non-linear filter capturing particular image structures, while the second network recognizes typewritten characters (using a variety of different fonts). These examples illustrate the use of stochastic gradient descent with momentum, the definition of an objective function, the construction of mini-batches of data, and data jittering.
 
-[TOC]
+Each part contains several **Questions** (that require pen and paper) and
+**Tasks** (that require experimentation or coding) to be answered/completed
+before proceeding further in the lab.
 
-$$
-   \newcommand{\bx}{\mathbf{x}}
-   \newcommand{\by}{\mathbf{y}}
-   \newcommand{\bz}{\mathbf{z}}
-   \newcommand{\bw}{\mathbf{w}}
-   \newcommand{\bp}{\mathbf{p}}
-   \newcommand{\cP}{\mathcal{P}}
-   \newcommand{\cN}{\mathcal{N}}
-   \newcommand{\vc}{\operatorname{vec}}
-   \newcommand{\vv}{\operatorname{vec}}
-$$
-
-## Getting started
-
-Read and understand the [requirements and installation instructions](../overview/index.html#installation). The download links for this practical are:
-
-* Code and data: [practical-cnn-2017a.tar.gz](http://www.robots.ox.ac.uk/~vgg/share/practical-cnn-2017a.tar.gz)
-* Code only: [practical-cnn-2017a-code-only.tar.gz](http://www.robots.ox.ac.uk/~vgg/share/practical-cnn-2017a-code-only.tar.gz)
-* Data only: [practical-cnn-2017a-data-only.tar.gz](http://www.robots.ox.ac.uk/~vgg/share/practical-cnn-2017a-data-only.tar.gz)
-* [Git repository](https://github.com/vedaldi/practical-cnn) (for lab setters and developers)
-
-After the installation is complete, open and edit the script `exercise1.m` in the MATLAB editor. The script contains commented code and a description for all steps of this exercise, for [Part I](#part1) of this document. You can cut and paste this code into the MATLAB window to run it, and will need to modify it as you go through the session. Other files `exercise2.m`, `exercise3.m`, and `exercise4.m` are given for [Part II](#part2), [III](#part3), and [IV](part4).
-
-Each part contains several **Questions** (that require pen and paper) and **Tasks** (that require experimentation or coding) to be answered/completed before proceeding further in the practical.
+The MathLAN directory `/home/weinman/courses/CSC262/cnn` contains the code and
+other files referenced throughout this lab.
 
 ## Part 1: CNN building blocks {#part1}
+
+Open the script `exercise1.m` in the MATLAB editor; it contains commented code
+and a description for all steps of this exercise, for lab [Part I](#part1). You
+can cut and paste this code into the MATLAB window to run it, and you may need to modify it as you go through the session.
 
 ### Part 1.1: convolution {#part1.1}
 
@@ -51,12 +52,12 @@ In a *convolutional neural network* data and functions have additional structure
 
 The second property of a CNN is that the functions $f_l$ have a *convolutional structure*. This means that $f_l$ applies to the input map $\bx_l$ an operator that is *local and translation invariant*. Examples of convolutional operators are applying a bank of linear filters to $\bx_l$. 
 
-In this part we will familiarise ourselves with a number of such convolutional and non-linear operators. The first one is the regular *linear convolution* by a filter bank. We will start by focusing our attention on a single function relation as follows:
+In this part we will familiarize ourselves with a number of such convolutional and non-linear operators. The first one is the regular *linear convolution* by a filter bank. We will start by focusing our attention on a single function relation as follows:
 $$
  f: \mathbb{R}^{M\times N\times K} \rightarrow \mathbb{R}^{M' \times N' \times K'},
  \qquad \bx \mapsto \by.
 $$
-Open the `example1.m` file, select the following part of the code, and execute it in MATLAB (right button > `Evaluate selection` or `Shift+F7`).
+Open the [`exercise1.m`](code/exercise1.m) file, select the following part of the code, and execute it in MATLAB (right button > `Evaluate selection` or `Shift+F7`).
 
 ```matlab
 % Read an example image
@@ -77,14 +78,15 @@ Use MATLAB `size` command to obtain the size of the array `x`. Note that the arr
 
 > **Question.** The third dimension of `x` is 3. Why?
 
-Next, we create a bank of 10 filters of dimension $5 \times 5 \times 3$, initialising their coefficients randomly:
+Next, we create a bank of 10 filters of dimension $5 \times 5 \times 3$, initializing their coefficients randomly:
 
 ```matlab
 % Create a bank of linear filters
 w = randn(5,5,3,10,'single') ;
 ```
 
-The filters are in single precision as well. Note that `w` has four dimensions, packing 10 filters. Note also that each filter is not flat, but rather a volume containing three slices. The next step is applying the filter to the image. This uses the `vl_nnconv` function from MatConvNet:
+The filters are in single precision as well. Note that `w` has four dimensions,
+packing 10 filters together. Note also that each filter is not flat, but rather a volume containing three slices. The next step is applying the filter to the image. This uses the `vl_nnconv` function from MatConvNet:
 
 ```matlab
 % Apply the convolution operator
@@ -104,7 +106,7 @@ $$
 >  - Given that the input map $\bx$ has $M \times N \times K$ dimensions and that each of the $K'$ filters has dimension $M_f \times N_f \times K$, what is the dimension of $\by$?
 >  - Note that $x$ is indexed by $i+i'$ and $j+j'$, but that there is no plus sign between $k$ and $k'$. Why?
 
-> **Task:** check that the size of the variable `y` matches your calculations.
+> **Task:** Check that the size of the variable `y` matches your calculations.
 
 We can now visualise the output `y` of the convolution. In order to do this, use the [`vl_imarraysc`](http://www.vlfeat.org/matlab/vl_imarraysc.html) function to display an image for each feature channel in `y`:
 
@@ -153,15 +155,16 @@ imagesc(-abs(y_lap)) ; title('- abs(filter output)') ;
 > 
 > * What filter have we implemented?
 > * How are the RGB colour channels processed by this filter?
-> * What image structure are detected?
+> * What image structures are detected?
 
 ### Part 1.2: non-linear activation functions {#part1.2}
 
 As we stated in the introduction, CNNs are obtained by composing several different functions. In addition to the linear filters shown in the [previous part](#part1.1), there are several non-linear operators as well.
 
-> **Question:** Some of the functions in a CNN *must* be non-linear. Why?
+> **Question:** To gain the primary benefits of a multilayer (deep) network, some of the functions in a CNN *must* be non-linear. Why?
 
-The simplest non-linearity is obtained by following a linear filter by a *non-linear activation function*, applied identically to each component (i.e. point-wise) of a feature map. The simplest such function is the *Rectified Linear Unit (ReLU)*
+The simplest non-linearity is obtained by applying a *non-linear activation
+function* after a linear filter; the non-linearity is applied identically to each component (i.e. point-wise) of a feature map. The simplest such function is the *Rectified Linear Unit (ReLU)*:
 $$
   y_{ijk} = \max\{0, x_{ijk}\}.
 $$
@@ -193,16 +196,18 @@ Max pooling is implemented by the `vl_nnpool` function. Try this now:
 
 ```matlab
 y = vl_nnpool(x, 15) ;
-figure(6) ; clf ; imagesc(y) ;
+figure(7) ; clf ; imagesc(y) ;
 ```
 
-> **Question:** look at the resulting image. Can you interpret the result?
+> **Question:** Look at the resulting image. Can you interpret the result?
 
 The function `vl_nnpool` supports subsampling and padding just like `vl_nnconv`. However, for max-pooling feature maps are padded with the value $-\infty$ instead of 0. Why?
 
 ### Part 1.4: normalisation {#part1.4}
 
-Another important CNN building block is channel-wise normalisation. This operator normalises the vector of feature channels at each spatial location in the input map $\bx$. The form of the normalisation operator is actually rather curious:
+Another important CNN building block is channel-wise normalisation. This
+operator normalises the vector of feature channels at each spatial location in
+the input map $\bx$. The form of the normalization operator is perhaps rather unusual:
 $$
   y_{ijk} = \frac{x_{ijk}}{\left(\kappa + \alpha \sum_{k'\in G(k)}  x_{ijk'}^2\right)^{\beta}}
 $$
@@ -218,7 +223,7 @@ kappa = 0 ;
 alpha = 1 ;
 beta = 0.5 ;
 y_nrm = vl_nnnormalize(x, [rho kappa alpha beta]) ;
-figure(6) ; clf ; imagesc(y_nrm) ;
+figure(8) ; clf ; imagesc(y_nrm) ;
 ```
 
 > **Tasks:** 
@@ -232,7 +237,7 @@ figure(6) ; clf ; imagesc(y_nrm) ;
 The parameters of a CNN $\bw=(\bw_1,\dots\bw_L)$ should be learned in such a manner that the overall CNN function  $\bz = f(\bx;\bw)$ achieves a desired goal. In some cases,  the goal is to model the distribution of the data, which leads to a *generative objective*. Here, however, we will use $f$ as a *regressor* and obtain it by minimising a *discriminative objective*. In simple terms, we are given:
 
 * examples of the desired input-output relations $(\bx_1,\bz_1), \dots, (\bx_n,\bz_n)$ where $\bx_i$ are input data and $\bz_i$ corresponding output values;
-* and a loss $\ell(\bz,\hat\bz)$ that expresses the penalty for predicting $\hat\bz$ instead of $\bz$.
+* and a loss $\ell(\bz,\hat{\bz})$ that expresses the penalty for predicting $\hat{\bz}$ instead of $\bz$.
 
 We use those to write the empirical loss of the CNN $f$ by averaging over the examples:
 $$
@@ -330,7 +335,7 @@ $$
 
 For example, this is how this looks for the convolution operator:
 
-```.language-matlab
+```matlab
 y = vl_nnconv(x,w,b) ; % forward mode (get output)
 p = randn(size(y), 'single') ; % projection tensor (arbitrary)
 [dx,dw,db] = vl_nnconv(x,w,b,p) ; % backward mode (get projected derivatives)
@@ -338,7 +343,7 @@ p = randn(size(y), 'single') ; % projection tensor (arbitrary)
 
 and this is how it looks for ReLU operator:
 
-```.language-matlab
+```matlab
 y = vl_nnrelu(x) ;
 p = randn(size(y), 'single') ;
 dx = vl_nnrelu(x,p) ;
@@ -376,7 +381,7 @@ dzdy = randn(size(y), 'single') ;
 % Back-propagation
 [dzdx, dzdw] = vl_nnconv(x, w, [], dzdy) ;
 ```
-> **Task:** Run the code above and check the dimensions of `dzdx` and `dzdy`. Does this matches your expectations?
+> **Task:** Run the code above and check the dimensions of `dzdx` and `dzdy`. Does this match your expectations?
 
 An advantage of this modular view is that new building blocks can be coded and added to the architecture in a simple manner. However, it is easy to make mistakes in the calculation of complex derivatives. Hence, it is a good idea to verify results numerically. Consider the following piece of code:
 
@@ -456,6 +461,7 @@ $$
 \bx_2 = W * \bx_1 + b, \qquad \bx_3 = \operatorname{maxpool}_\rho \bx_2.
 $$
 $W$ contains a single $3\times 3$ square filter, so that $b$ is a scalar. and the input image $\bx=\bx_1$ has a single channel.
+
 > **Task**
 > 
 > * Open the file `tinycnn.m` and inspect the code. Convince yourself that the code computes the CNN just described.
@@ -533,11 +539,11 @@ $$
 > - What can you say about the score of each pixel if $\lambda=0$ and $E(\bw,b) =0$?
 > - Note that the objective enforces a *margin* between the scores of the positive and negative pixels. How much is this margin?
 
-We can now train the CNN by minimising the objective function with respect to $\bw$ and $b$. We do so by using an algorithm called *gradient descent with momentum*.  Given the current solution $(\bw_t,b_t)$, this is updated to $(\bw_{t+1},b_{t+1})$ by following the direction of fastest descent of the objective $E(\bw_t,b_t)$ as given by the negative gradient $-\nabla E$. However, gradient updates are smoothed by considering a *momentum* term $(\bar\bw_{t}, \bar\mu_t)$, yielding the update equations
+We can now train the CNN by minimising the objective function with respect to $\bw$ and $b$. We do so by using an algorithm called *gradient descent with momentum*.  Given the current solution $(\bw_t,b_t)$, this is updated to $(\bw_{t+1},b_{t+1})$ by following the direction of fastest descent of the objective $E(\bw_t,b_t)$ as given by the negative gradient $-\nabla E$. However, gradient updates are smoothed by considering a *momentum* term $(\bar{\bw}_{t}, \bar{\mu}_t)$, yielding the update equations
 $$
- \bar\bw_{t+1} \leftarrow \mu \bar\bw_t + \eta \frac{\partial E}{\partial \bw_t},
+ \bar{\bw}_{t+1} \leftarrow \mu \bar{\bw}_t + \eta \frac{\partial E}{\partial \bw_t},
  \qquad
- \bw_{t+1} \leftarrow \bw_{t} - \bar\bw_t.
+ \bw_{t+1} \leftarrow \bw_{t} - \bar{\bw}_t.
 $$
 and similarly for the bias term. Here $\mu$ is the *momentum rate* and $\eta$ the *learning rate*.
 
