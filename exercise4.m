@@ -11,7 +11,7 @@ setup ;
 imdb = load('data/charsdb.mat') ;
 
 % Visualize some of the data
-figure(10) ; clf ; colormap gray ;
+figure(1) ; clf ; colormap gray ;
 subplot(1,2,1) ;
 vl_imarraysc(imdb.images.data(:,:,imdb.images.label==1 & imdb.images.set==1)) ;
 axis image off ;
@@ -160,7 +160,7 @@ sy = max(1, min(32, (1:32) + dy)) ;
 im = ctx(sy,sx,:) ;
 
 % Visualize the batch:
-% figure(100) ; clf ;
+% figure(5) ; clf ;
 % vl_imarraysc(im) ;
 
 im = 256 * reshape(im, 32, 32, 1, []) ;
