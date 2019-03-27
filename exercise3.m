@@ -61,6 +61,7 @@ y(neg) = -1 ;
 w_momentum = zeros('like', w) ;
 b_momentum = zeros('like', b) ;
 
+fprintf('Iter\tError\tReg\tTotal Loss\n');
 % SGD with momentum
 for t = 1:numIterations
 
@@ -107,6 +108,8 @@ for t = 1:numIterations
     grid on ; title('objective') ;
     ylim([0 1.5]) ; legend('error', 'regularizer', 'total') ;
 
+    fprintf('%d\t',t-1); fprintf('%.4f\t',E(:,t)); fprintf('\n');
+    
     subplot(2,3,2) ; hold on ;
     [h,x]=hist(res.x3(pos(:)),30) ; plot(x,h/max(h),'g') ;
     [h,x]=hist(res.x3(neg(:)),30) ; plot(x,h/max(h),'r') ;
@@ -117,11 +120,11 @@ for t = 1:numIterations
 
     subplot(2,3,3) ;
     vl_imarraysc(w) ;
-    title('learned filter') ; axis equal tight;
+    title('learned filter') ; axis equal tight ;
 
     subplot(2,3,4) ;
     imagesc(res.x3) ;
-    title('network output') ; axis equal tight;
+    title('network output') ; axis equal tight ;
 
     subplot(2,3,5) ;
     imagesc(res.x2) ;
@@ -130,7 +133,7 @@ for t = 1:numIterations
     subplot(2,3,6) ;
     image(err) ;
     title('red: pred. error, green: correct, blue: ignore') ;
-    axis equal tight;
+    axis equal tight ;
     
     if verLessThan('matlab', '8.4.0')
       drawnow ;
