@@ -638,7 +638,13 @@ Finally, consider the regularization effect of shrinking:
 
 ## Part 4: learning a character CNN
 
-In this part we will learn a CNN to recognize images of characters.
+In this part we will learn a CNN to recognize images of characters. The
+prefatory commands establish a directory to save partially trained networks:
+
+```matlab
+setup('useGpu', true) ;
+mkdir(['/tmp/' getenv('USER')]) ;
+```
 
 ### Part 4.1: prepare the data
 
@@ -696,7 +702,7 @@ We are now ready to train the CNN. To this end we use the example SGD implementa
 trainOpts.batchSize = 100 ;
 trainOpts.numEpochs = 100 ;
 trainOpts.continue = true ;
-trainOpts.useGpu = false ;
+trainOpts.gpus = [1] ;
 trainOpts.learningRate = 0.001 ;
 trainOpts.numEpochs = 15 ;
 trainOpts.expDir = 'data/chars-experiment' ;
@@ -745,13 +751,13 @@ Once training is finished, the model is saved back:
 % Save the result for later use
 net.layers(end) = [] ;
 net.imageMean = imageMean ;
-save('data/chars-experiment/charscnn.mat', '-struct', 'net') ;
+save(['/tmp/' getenv('USER') '-charscnn.mat'], '-struct', 'net') ;
 ```
 
 Note that we remember the `imageMean` for later use. Note also that the softmaxloss layer is *removed* from the network before saving.
 
 
-### Part 4.4: visualise the learned filters
+### Part 4.4: visualize the learned filters
 
 The next step is to glance at the filters that have been learned:
 ```matlab
@@ -761,7 +767,12 @@ axis equal ;
 title('filters in the first layer') ;
 ```
 
-> **Task:** what can you say about the filters?
+You may want to make the Matlab figure window smaller so the filters are not so
+gigantically pixellated, but instead allow you to get a more holistic visual
+sense of the filters' structure.
+
+> **Task:** What can you say about the filters? That is, what kinds of features
+> are they extracting? In what ways are they self-similar? Different?
 
 ### Part 4.5: apply the model
 
@@ -771,7 +782,7 @@ We now apply the model to a whole sequence of characters. This is the image `dat
 
 ```matlab
 % Load the CNN learned before
-net = load('data/chars-experiment/charscnn.mat') ;
+net = load(['/tmp/' getenv('USER') '-charscnn.mat']) ;
 
 % Load the sentence
 im = im2single(imread('data/sentence-lato.png')) ;
@@ -783,9 +794,9 @@ res = vl_simplenn(net, im) ;
 
 > **Question:** The image is much wider than 32 pixels. Why can you apply to it the CNN learned before for $32\times 32$ patches?
 
-> **Task:** examine the size of the CNN output using `size(res(end).x)`. Does this match your expectation?
+> **Task:** Examine the size of the CNN output using `size(res(end).x)`. Does this match your expectation?
 
-Now use the `decodeCharacters()`  function to visualise the results:
+Now use the `decodeCharacters()`  function to visualize the results:
 
 ```matlab
 % Visualize the results
@@ -793,7 +804,7 @@ figure(3) ; clf ;
 decodeCharacters(net, imdb, im, res) ;
 ```
 
-> **Tasks:** inspect the output of the `decodeCharacters()` function and answer the following:
+> **Tasks:** Inspect the output of the `decodeCharacters()` function and answer the following:
 > 
 > 1.  Is the quality of the recognition any good?
 > 2.  Does this match your expectation given the recognition rate in your validation set (as reported by `cnn_train` during training)?
@@ -802,7 +813,7 @@ decodeCharacters(net, imdb, im, res) ;
 
 A key issue with the previous CNN is that it is not trained to recognise characters in the context of other characters. Furthermore, characters are perfectly centred in the patch. We can relax these assumptions by making the training data "more realistic". In this part we will train a second network applying *data jittering* by:
 
-1.   Randomly adding a character to the left and to the right of the one recognised and
+1.   Randomly adding a character to the left and to the right of the one recognized and
 2.   Randomly shifting the characters by up to $\pm 5$ pixels horizontally and $\pm 2$ pixels vertically.
 
 This is implemented by the `getBatchWithJitter()`  function (note that jittering is applied on the fly as it is so fast).
@@ -814,29 +825,14 @@ This is implemented by the `getBatchWithJitter()`  function (note that jittering
 > 3.  Use the new model to recognise the characters in the sentence by repeating the previous part. Does it work better?
 > 4.  **Advanced.** What else can you change to make the performance even better?
 
-### Part 4.7: Training using the GPU
 
-> Skip this part if you do not wish to experiment training using GPU hardware.
-
-A key challenge in deep learning is the sheer amount of computation required to train gigantic models from equally gigantic data collections. State-of-the-art vision models, for example, take weeks to train on specialised hardware such as GPUs, and they are essentially untrainable on CPU (unless you have access to a very large cluster). Thus it is practically important to learn how to use this hardware.
-
-In MatConvNet this is almost trivial as it builds on the easy-to-use GPU support in MATLAB. You can follow this list of steps to try it out:
-
-1. Clear the models generated and cached in the previous steps. To do this, rename or delete the directories `data/characters-experiment` and `data/characters-jit-experiment`.
-2. Make sure that MatConvNet is compiled with GPU support. To do this, use `setup('useGpu', true)`.
-3. Try again training the model of `exercise4.m` switching to `true` the `useGpu` flag.
-
-> **Task:** Follow the steps above and note the speed of training. How many images per second can you process now?
-
-For these small images, the GPU speedup is probably modest (perhaps 2-5 fold). However, for larger models it becomes really dramatic (>10 fold).
-
-## Part 5: using pretrained models
+## [Optional] Part 5: using pretrained models
 
 A characteristic of deep learning is that it constructs *representations* of the data. These representations tend to have a universal value, or at least to be applicable to an array of problems that transcends the particular task a model was trained for. This is fortunate as training complex models requires weeks of works on one or more GPUs or hundreds of CPUs; these models can then be frozen and reused for a number of additional applications, with no or minimal additional work.
 
 In this part we will see how MatConvNet can be used to download and run high-performance CNN models for image classification. These models are trained from 1.2M images in the ImageNet datasets to discriminate 1,000 different object categories.
 
-Several [pertained models](http://www.vlfeat.org/matconvnet/pretrained/) can be downloaded from the MatConvNet website, including several trained using other CNN implementations such as Caffe. One such models is included in the practical `data/imagenet-vgg-verydeep-16.mat` file. This is one of the best models from the ImageNet ILSVCR Challenge 2014.
+Several [pretained models](http://www.vlfeat.org/matconvnet/pretrained/) can be downloaded from the MatConvNet website, including several trained using other CNN implementations such as Caffe. One such models is included in the practical `data/imagenet-vgg-verydeep-16.mat` file. This is one of the best models from the ImageNet ILSVCR Challenge 2014.
 
 ### Part 5.1:  load a pre-trained model
 
