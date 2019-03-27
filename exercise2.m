@@ -53,7 +53,7 @@ dzdx2 = vl_nnpool(x2, rho2, dzdx3) ;
 
 % Check the derivative numerically
 ew1 = randn(size(w1), 'single') ;
-eta = 0.0001 ;
+eta = 1e-4 ;
 w1p = w1 + eta * ew1  ;
 
 x1p = x1 ;

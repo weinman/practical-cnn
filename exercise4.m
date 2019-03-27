@@ -35,10 +35,10 @@ net = initializeCharacterCNN() ;
 trainOpts.batchSize = 100 ;
 trainOpts.numEpochs = 15 ;
 trainOpts.continue = true ;
-trainOpts.gpus = [] ;
+trainOpts.gpus = [1] ;
 trainOpts.learningRate = 0.001 ;
-trainOpts.expDir = 'data/chars-experiment' ;
-trainOpts = vl_argparse(trainOpts, varargin);
+trainOpts.expDir = '/tmp' ;
+%trainOpts = vl_argparse(trainOpts, varargin);
 
 % Take the average image out
 imdb = load('data/charsdb.mat') ;
@@ -61,7 +61,7 @@ end
 % Save the result for later use
 net.layers(end) = [] ;
 net.imageMean = imageMean ;
-save('data/chars-experiment/charscnn.mat', '-struct', 'net') ;
+save(['/tmp/' getenv('USER') '-charscnn.mat'], '-struct', 'net') ;
 
 % -------------------------------------------------------------------------
 % Part 4.4: visualize the learned filters
@@ -76,8 +76,8 @@ axis equal ; title('filters in the first layer') ;
 % -------------------------------------------------------------------------
 
 % Load the CNN learned before
-net = load('data/chars-experiment/charscnn.mat') ;
-%net = load('data/chars-experiment/charscnn-jit.mat') ;
+net = load(['/tmp/' getenv('USER') '-charscnn.mat']) ;
+%net = load(['tmp/' getenv('USER') '-charscnn-jit.mat']) ;
 
 % Load the sentence
 [im,cmap] = imread('data/sentence-lato.png') ;
@@ -103,7 +103,7 @@ trainOpts.batchSize = 100 ;
 trainOpts.numEpochs = 15 ;
 trainOpts.continue = true ;
 trainOpts.learningRate = 0.001 ;
-trainOpts.expDir = 'data/chars-jit-experiment' ;
+trainOpts.expDir = '/tmp' ;
 
 % Initlialize a new network
 net = initializeCharacterCNN() ;
@@ -119,51 +119,8 @@ end
 % Save the result for later use
 net.layers(end) = [] ;
 net.imageMean = imageMean ;
-save('data/chars-experiment/charscnn-jit.mat', '-struct', 'net') ;
+save(['/tmp/' getenv('USER') '-charscnn-jit.mat', '-struct', 'net') ;
 
 % Visualize the results on the sentence
 figure(4) ; clf ;
 decodeCharacters(net, imdb, im, vl_simplenn(net, im)) ;
-
-% --------------------------------------------------------------------
-function [im, labels] = getBatch(imdb, batch)
-% --------------------------------------------------------------------
-im = imdb.images.data(:,:,batch) ;
-im = 256 * reshape(im, 32, 32, 1, []) ;
-labels = imdb.images.label(1,batch) ;
-
-% --------------------------------------------------------------------
-function [im, labels] = getBatchWithJitter(imdb, batch)
-% --------------------------------------------------------------------
-im = imdb.images.data(:,:,batch) ;
-labels = imdb.images.label(1,batch) ;
-
-n = numel(batch) ;
-train = find(imdb.images.set == 1) ;
-
-sel = randperm(numel(train), n) ;
-im1 = imdb.images.data(:,:,sel) ;
-
-sel = randperm(numel(train), n) ;
-im2 = imdb.images.data(:,:,sel) ;
-
-ctx = [im1 im2] ;
-ctx(:,17:48,:) = min(ctx(:,17:48,:), im) ;
-
-dx = randi(11) - 6 ;
-im = ctx(:,(17:48)+dx,:) ;
-sx = (17:48) + dx ;
-
-dy = randi(5) - 2 ;
-sy = max(1, min(32, (1:32) + dy)) ;
-
-im = ctx(sy,sx,:) ;
-
-% Visualize the batch:
-% figure(5) ; clf ;
-% vl_imarraysc(im) ;
-
-im = 256 * reshape(im, 32, 32, 1, []) ;
-
-
-

@@ -1,7 +1,8 @@
 function setup(varargin)
 % SETUP  Add the required search paths to MATLAB
-run matconvnet/matlab/vl_setupnn ;
-addpath matconvnet/examples ;
+
+%run matconvnet/matlab/vl_setupnn ;
+addpath /home/weinman/courses/CSC262/toolbox/matconvnet/examples ;
 
 opts.useGpu = false ;
 opts.verbose = false ;
