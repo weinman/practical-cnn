@@ -19,7 +19,7 @@ function f = hessiandet(im)
 %   F = HESSIANDET(IM) runs a basic implementation of the Hessian
 %   detector on the gray-scale image IM.
 
-ims = imsmooth(im,2.5) ;
+ims = vl_imsmooth(im,2.5) ;
 
 d2 = [1 -2 1];
 d = [-1 0 1]/2 ;
