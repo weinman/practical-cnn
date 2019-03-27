@@ -31,14 +31,27 @@ Each part contains several **Questions** (that require pen and paper) and
 **Tasks** (that require experimentation or coding) to be answered/completed
 before proceeding further in the lab.
 
+## Preparation
+
 The MathLAN directory `/home/weinman/courses/CSC262/cnn` contains the code and
-other files referenced throughout this lab.
+other files referenced throughout this lab. After starting Matlab, change to
+this directory (*within* Matlab):
+
+```matlab
+cd /home/weinman/courses/CSC262/cnn
+```
+
 
 ## Part 1: CNN building blocks {#part1}
 
-Open the script `exercise1.m` in the MATLAB editor; it contains commented code
+Open the script `exercise1.m` in the MATLAB editor. it contains commented code
 and a description for all steps of this exercise, for lab [Part I](#part1). You
-can cut and paste this code into the MATLAB window to run it, and you may need to modify it as you go through the session.
+can cut and paste this code into the MATLAB window to run it, and you may need
+to modify it as you go through the session.
+
+```matlab
+edit exercise1.m
+```
 
 ### Part 1.1: convolution {#part1.1}
 
@@ -57,7 +70,7 @@ $$
  f: \mathbb{R}^{M\times N\times K} \rightarrow \mathbb{R}^{M' \times N' \times K'},
  \qquad \bx \mapsto \by.
 $$
-Open the [`exercise1.m`](code/exercise1.m) file, select the following part of the code, and execute it in MATLAB (right button > `Evaluate selection` or `Shift+F7`).
+Open the [`exercise1.m`](code/exercise1.m) file, select the following part of the code, and execute it in MATLAB (right button > `Evaluate selection` or `F9`).
 
 ```matlab
 % Read an example image
@@ -249,7 +262,8 @@ The simplest algorithm to minimise $L$, and in fact one that is used in practice
 $$
  \bw^{t+1} = \bw^{t} - \eta_t \frac{\partial f}{\partial \bw}(\bw^t)
 $$
-where $\eta_t \in \mathbb{R}_+$ is the *learning rate*.
+where $\eta_t \in \mathbb{R}_+$ is the *learning rate* (sometimes also called
+the *step size*)
 
 ### Part 2.1: the theory of back-propagation
 
@@ -453,7 +467,14 @@ fprintf(...
   dzdw1_empirical, dzdw1_computed, ...
   abs(1 - dzdw1_empirical/dzdw1_computed)*100) ;
 ```
- 
+
+If you find a particularly large error here, you may want to remember that this
+test represents a "linearization" of the error surface. The random values of
+either the step sizes (`eta * ew1`) or the filter weights themselves (`w1`),
+may lead to particularly steep error surfaces that are not well approximated by
+a first-order Taylor series. If that is the case, you may want to re-run the
+test(s) with different random values.
+
 ## Part 3: learning a tiny CNN
 
 In this part we will learn a very simple CNN. The CNN is composed of exactly two layers: a convolutional layer and a max-pooling layer:
@@ -470,7 +491,7 @@ $W$ contains a single $3\times 3$ square filter, so that $b$ is a scalar. and th
 
 In the rest of the section we will learn the CNN parameters in order to extract blob-like structures from images, such as the ones in the following image:
 
-<img width=350px src="images/dots.jpg" alt="sentence-lato"/>
+<img width=350px src="images/dots.jpg" alt="Polka dot skirt"/>
 
 ### Part 3.1: training data and labels
 
@@ -499,7 +520,7 @@ colormap gray ;
 > - `pos` contains a single `true` value in correspondence of each blob centre;
 > - `neg` contains a `true` value for each pixel sufficiently far away from a blob.
 > 
-> Are there pixels for which both `pos` and `neg` evaluate to false?
+> Are there pixels for which both `pos` and `neg` evaluate to false? Why?
 
 ### Part 3.2: image preprocessing
 
@@ -549,8 +570,8 @@ and similarly for the bias term. Here $\mu$ is the *momentum rate* and $\eta$ th
 
 > **Questions:**
 >
-> - Explain why the momentum rate must be smaller than 1. What is the effect of having a momentum rate close to 1?
-> - The learning rate establishes how fast the algorithm will try to minimise the objective function. Can you see any problem with a large learning rate?
+> - Explain why the momentum rate $\mu$ must be smaller than 1. What is the effect of having a momentum rate close to 1?
+> - The learning rate $\eta$ establishes how fast the algorithm will try to minimise the objective function. Can you see any problem with a large learning rate?
 
 The parameters of the algorithm are set as follows:
 
@@ -573,7 +594,7 @@ plotPeriod = 10 ;
 >     * As the histograms evolve, can you identify at least two "phases" in the optimisation?
 >     * Once converged, do the score distribute in the manner that you would expect?
 >
-> **Hint:** the `plotPeriod` option can be changed to plot the diagnostic figure with a higher or lower frequency; this can significantly affect the speed of the algorithm.
+> **Hint:** The `plotPeriod` option can be changed to plot the diagnostic figure with a higher or lower frequency; this can significantly affect the speed of the algorithm.
 
 ### Part 3.4: experimenting with the tiny CNN
 
@@ -592,30 +613,32 @@ Now restore the smoothing but switch off subtracting the median from the input i
 > **Task:** Train again the tiny CNN *without subtracting the median value in preprocessing*. Answer the following questions:
 >
 >   * Does the algorithm converge?
->   * Reduce a hundred-fold the learning are and increase the maximum number of iterations by an equal amount. Does it get better?
+>   * Reduce a hundred-fold the learning rate and increase the maximum number of iterations by an equal amount. Does it get better?
 >   * Explain why adding a constant to the input image can have such a dramatic effect on the performance of the optimisation.
 >
 > **Hint:** What constraint should the filter $\bw$ satisfy if the filter output should be zero when (i) the input image is zero or (ii) the input image is a large constant? Do you think that it would be easy for gradient descent to enforce (ii) at all times?
 
-What you have just witnessed is actually a fairly general principle: centring the data usually makes learning problems much better conditioned.
+What you have just witnessed is actually a fairly general principle: centering the data usually makes learning problems much better conditioned.
 
 Now we will explore several parameters in the algorithms:
 
-> **Task:** Restore the preprocessing as given in `experiment3.m`.  Try the following:
+> **Task:** Restore the preprocessing as given in `exercise3.m`.  Try the following:
 >
-> * Try increasing the learning rate `eta`. Can you achieve a better value of the energy in the 500 iterations?
+> * Try increasing the learning rate `eta`. Can you achieve a better (lower)
+>final value of the energy in the 500 iterations?
 > * Disable momentum by setting `momentum = 0`. Now try to beat the result obtained above by choosing `eta`. Can you succeed?
 
-Finally, consider the regularisation effect of shrinking:
+Finally, consider the regularization effect of shrinking:
 
-> **Task:** Restore the learning rate and momentum as given in `experiment3.m`. Then increase the shrinkage factor tenfold and a hundred-fold.
+> **Task:** Restore the learning rate and momentum as given in
+> `exercise3.m`. Then increase the shrinkage factor tenfold, and then a hundred-fold.
 > 
 > - What is the effect on the convergence speed?
 > - What is the effect on the final value of the total objective function and of the average loss part of it?
 
 ## Part 4: learning a character CNN
 
-In this part we will learn a CNN to recognise images of characters.  
+In this part we will learn a CNN to recognize images of characters.
 
 ### Part 4.1: prepare the data
 
@@ -624,17 +647,17 @@ Open up `exercise4.m` and execute Part 4.1. The code loads a structure `imdb` co
 ```matlab
 >> imdb.images
 ans = 
-       id: [1x24206 double]
-     data: [32x32x24206 single]
-    label: [1x24206 double]
-      set: [1x24206 double]
+       id: [1x29198 double]
+     data: [32x32x29198 single]
+    label: [1x29198 double]
+      set: [1x29198 double]
 ```
 
-These are stored as the array `imdb.images.id` is a 29,198-dimensional vector of numeric IDs for each of the 29,198  character images in the dataset. `imdb.images.data` contains a $32 \times 32$ image for each character, stored as a slide of a $32\times 32\times 29,\!198$-dimensional array. `imdb.images.label` is a vector of image labels, denoting which one of the 26 possible characters it is. `imdb.images.set` is equal to 1 for each image that should be used to train the CNN and to 2 for each image that should be used for validation.
+These are stored as the array `imdb.images.id` is a 29,198-dimensional vector of numeric IDs for each of the 29,198  character images in the dataset. `imdb.images.data` contains a $32 \times 32$ image for each character, stored as a slice of a $32\times 32\times 29,\!198$-dimensional array. `imdb.images.label` is a vector of image labels, denoting which one of the 26 possible characters it is. `imdb.images.set` is equal to 1 for each image that should be used to train the CNN and to 2 for each image that should be used for validation.
 
 <img height=400px src="images/chars.png" alt="cover"/>
 
-> **Task:** look at the Figure 1 generated by the code and at the code itself and make sure that you understand what you are looking at.
+> **Task:** Look at the Figure 1 generated by the code and at the code itself and make sure that you understand what you are looking at.
 
 ### Part 4.2: intialize a CNN architecture
 
@@ -643,17 +666,17 @@ The function `initializeCharacterCNN.m` creates a CNN initialised with random we
 > **Tasks:**
 > 
 > 1.  By inspecting `initializeCharacterCNN.m` get a sense of the architecture that will be trained. How many layers are there? How big are the filters?
-> 2.  Use the function [`vl_simplenn_display`](http://www.vlfeat.org/matconvnet/mfiles/vl_simplenn_display/) to produce a table summarising the architecture.
+> 2.  Use the function [`vl_simplenn_display`](http://www.vlfeat.org/matconvnet/mfiles/simplenn/vl_simplenn_display/) to produce a table summarising the architecture.
 
 Note that the *penultimate* layer has 26 output dimensions, one for each character. Character recognition looks at the maximal output to identify which character is processed by the network.
 
 However, the last network layer is [`vl_nnsoftmaxloss`](http://www.vlfeat.org/matconvnet/mfiles/vl_nnsoftmaxloss/), which in turn is a combination of the [`vl_nnsoftmax`](http://www.vlfeat.org/matconvnet/mfiles/vl_nnsoftmax/) function and of the classification log-loss [`vl_nnloss`](http://www.vlfeat.org/matconvnet/mfiles/vl_nnloss/). The *softmax* operator is given by
 $$
-  y_{ijk'} = \frac{e^{x_{ijk'}}}{\sum_{k} e^{x_{ijk}}}
+  y_{ijk} = \frac{e^{x_{ijk}}}{\sum_{k^\prime} e^{x_{ijk^\prime}}}
 $$
 whereas the *log-loss* is given by
 $$
-  y_{ij} = - \log x_{ij c_{ij}}
+  z_{ij} = - \log y_{ij c_{ij}}
 $$
 where $c_{ij}$ is the index of the ground-truth class at spatial location $(i,j)$.
 
@@ -683,7 +706,7 @@ This says that the function will operate on SGD mini-batches of 100 elements,  i
 
 Before the training starts, the average image value is subtracted:
 
-```
+```matlab
 % Take the average image out
 imageMean = mean(imdb.images.data(:)) ;
 imdb.images.data = imdb.images.data - imageMean ;
