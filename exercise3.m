@@ -117,20 +117,21 @@ for t = 1:numIterations
 
     subplot(2,3,3) ;
     vl_imarraysc(w) ;
-    title('learned filter') ; axis equal ;
+    title('learned filter') ; axis equal tight;
 
     subplot(2,3,4) ;
     imagesc(res.x3) ;
-    title('network output') ; axis equal ;
+    title('network output') ; axis equal tight;
 
     subplot(2,3,5) ;
     imagesc(res.x2) ;
-    title('first layer output') ; axis equal ;
+    title('first layer output') ; axis equal tight ;
 
     subplot(2,3,6) ;
     image(err) ;
     title('red: pred. error, green: correct, blue: ignore') ;
-
+    axis equal tight;
+    
     if verLessThan('matlab', '8.4.0')
       drawnow ;
     else
