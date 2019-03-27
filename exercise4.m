@@ -1,11 +1,16 @@
 function exercise4(varargin)
 % EXERCISE4   Part 4 of the VGG CNN practical
 
-setup ;
+setup('useGpu', true) ;
+mkdir(['/tmp/' getenv('USER')]) ;
 
 % -------------------------------------------------------------------------
 % Part 4.1: prepare the data
 % -------------------------------------------------------------------------
+
+% Create checkpoint directories
+mkdir(['/tmp/' getenv('USER') '/charcnn']) ;
+mkdir(['/tmp/' getenv('USER') '/charscnn-jit']) ;
 
 % Load character dataset
 imdb = load('data/charsdb.mat') ;
@@ -37,7 +42,7 @@ trainOpts.numEpochs = 15 ;
 trainOpts.continue = true ;
 trainOpts.gpus = [1] ;
 trainOpts.learningRate = 0.001 ;
-trainOpts.expDir = '/tmp' ;
+trainOpts.expDir = ['/tmp/' getenv('USER') '/charscnn'] ;
 %trainOpts = vl_argparse(trainOpts, varargin);
 
 % Take the average image out
@@ -61,7 +66,7 @@ end
 % Save the result for later use
 net.layers(end) = [] ;
 net.imageMean = imageMean ;
-save(['/tmp/' getenv('USER') '-charscnn.mat'], '-struct', 'net') ;
+save(['/tmp/' getenv('USER') '/charscnn.mat'], '-struct', 'net') ;
 
 % -------------------------------------------------------------------------
 % Part 4.4: visualize the learned filters
@@ -76,8 +81,8 @@ axis equal ; title('filters in the first layer') ;
 % -------------------------------------------------------------------------
 
 % Load the CNN learned before
-net = load(['/tmp/' getenv('USER') '-charscnn.mat']) ;
-%net = load(['tmp/' getenv('USER') '-charscnn-jit.mat']) ;
+net = load(['/tmp/' getenv('USER') '/charscnn.mat']) ;
+%net = load(['tmp/' getenv('USER') '/charscnn-jit.mat']) ;
 
 % Load the sentence
 [im,cmap] = imread('data/sentence-lato.png') ;
@@ -102,8 +107,9 @@ decodeCharacters(net, imdb, im, res) ;
 trainOpts.batchSize = 100 ;
 trainOpts.numEpochs = 15 ;
 trainOpts.continue = true ;
+trainOpts.gpus = [1] ;
 trainOpts.learningRate = 0.001 ;
-trainOpts.expDir = '/tmp' ;
+trainOpts.expDir = ['/tmp/' getenv('USER') '/charscnn-jit'] ;
 
 % Initlialize a new network
 net = initializeCharacterCNN() ;
@@ -119,7 +125,7 @@ end
 % Save the result for later use
 net.layers(end) = [] ;
 net.imageMean = imageMean ;
-save(['/tmp/' getenv('USER') '-charscnn-jit.mat', '-struct', 'net') ;
+save(['/tmp/' getenv('USER') '/charscnn-jit.mat'], '-struct', 'net') ;
 
 % Visualize the results on the sentence
 figure(4) ; clf ;
