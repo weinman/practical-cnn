@@ -15,9 +15,9 @@ im = rgb2gray(im2single(imread('data/dots.jpg'))) ;
 [pos,neg] = extractBlackBlobs(im) ;
 
 figure(1) ; clf ;
-subplot(1,3,1) ; imagesc(im) ; axis equal ; title('image') ;
-subplot(1,3,2) ; imagesc(pos) ; axis equal ; title('positive points (blob centres)') ;
-subplot(1,3,3) ; imagesc(neg) ; axis equal ; title('negative points (not a blob)') ;
+subplot(1,3,1) ; imagesc(im) ; axis equal tight ; title('image') ;
+subplot(1,3,2) ; imagesc(pos) ; axis equal tight ; title('positive points (blob centres)') ;
+subplot(1,3,3) ; imagesc(neg) ; axis equal tight ; title('negative points (not a blob)') ;
 colormap gray ;
 
 % -------------------------------------------------------------------------
