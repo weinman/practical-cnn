@@ -116,10 +116,11 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <li><a href="#optional-part-5-using-pretrained-models">[Optional] Part 5: using pretrained models</a><ul>
 <li><a href="#part-5.1-load-a-pre-trained-model">Part 5.1: load a pre-trained model</a></li>
 <li><a href="#part-5.2-use-the-model-to-classify-an-image">Part 5.2: use the model to classify an image</a></li>
+<li><a href="#part-5.3-use-the-model-to-classify-more-images">Part 5.3: use the model to classify more images</a></li>
 </ul></li>
 <li><a href="#links-and-further-work">Links and further work</a></li>
 <li><a href="#acknowledgements">Acknowledgements</a></li>
-<li><a href="#history">History</a></li>
+<li><a href="#license">License</a></li>
 </ul>
 </nav>
 
@@ -720,7 +721,7 @@ E(\mathbf{w},b) =
 <ol type="1">
 <li>Train a second model, using the jittered data.</li>
 <li>Look at the training and validation errors. Is their gap as wide as it was before?</li>
-<li>Use the new model to recognise the characters in the sentence by repeating the previous part. Does it work better?</li>
+<li>Use the new model to recognize the characters in the sentence by repeating the previous part. Does it work better?</li>
 <li><strong>Advanced.</strong> What else can you change to make the performance even better?</li>
 </ol>
 </blockquote>
@@ -746,7 +747,7 @@ E(\mathbf{w},b) =
 <a class="sourceLine" id="cb34-3" data-line-number="3">im_ = single(im) ; <span class="co">% note: 255 range</span></a>
 <a class="sourceLine" id="cb34-4" data-line-number="4">im_ = imresize(im_, net.normalization.imageSize(<span class="fl">1</span>:<span class="fl">2</span>)) ;</a>
 <a class="sourceLine" id="cb34-5" data-line-number="5">im_ = im_ - net.normalization.averageImage ;</a></code></pre></div>
-<p>The code normalises the image in a format compatible with the model <code>net</code>. This amounts to: converting the image to <code>single</code> format (but with range 0,…,255 rather than [0, 1] as typical in MATLAB), resizing the image to a fixed size, and then subtracting an average image.</p>
+<p>The code normalizes the image in a format compatible with the model <code>net</code>. This amounts to: converting the image to <code>single</code> format (but with range 0,…,255 rather than [0, 1] as typical in MATLAB), resizing the image to a fixed size, and then subtracting an average image.</p>
 <p>It is now possible to call the CNN:</p>
 <div class="sourceCode" id="cb35"><pre class="sourceCode matlab"><code class="sourceCode matlab"><a class="sourceLine" id="cb35-1" data-line-number="1"><span class="co">% run the CNN</span></a>
 <a class="sourceLine" id="cb35-2" data-line-number="2">res = vl_simplenn(net, im_) ;</a></code></pre></div>
@@ -758,23 +759,42 @@ E(\mathbf{w},b) =
 <a class="sourceLine" id="cb36-5" data-line-number="5">figure(<span class="fl">1</span>) ; clf ; imagesc(im) ;</a>
 <a class="sourceLine" id="cb36-6" data-line-number="6">title(sprintf(<span class="st">&#39;%s (%d), score %.3f&#39;</span>,...</a>
 <a class="sourceLine" id="cb36-7" data-line-number="7">  net.classes.description{best}, best, bestScore)) ;</a></code></pre></div>
-<p>That completes this practical.</p>
+<h3 id="part-5.3-use-the-model-to-classify-more-images">Part 5.3: use the model to classify more images</h3>
+<p>Try to modify the code to run this model on other stock matlab images (e.g., mandrill, cameraman, etc.) and see what labels are produced.</p>
+<p>That completes this lab.</p>
 <h2 id="links-and-further-work">Links and further work</h2>
 <ul>
 <li>The code for this practical is written using the software package <a href="http://www.vlfeat.org/matconvnet">MatConvNet</a>. This is a software library written in MATLAB, C++, and CUDA and is freely available as source code and binary.</li>
 <li>The ImageNet model is the <em>VGG very deep 16</em> of Karen Simonyan and Andrew Zisserman.</li>
+<li>The lab is derived from <a href="http://github.com/vedaldi/practical-cnn">practical-cnn</a>.</li>
 </ul>
 <h2 id="acknowledgements">Acknowledgements</h2>
 <ul>
 <li>Beta testing by: Karel Lenc and Carlos Arteta.</li>
 <li>Bugfixes/typos by: Sun Yushi.</li>
 </ul>
-<h2 id="history">History</h2>
-<ul>
-<li>Used in the Oxford AIMS CDT, 2016-17.</li>
-<li>Used in the Oxford AIMS CDT, 2015-16.</li>
-<li>Used in the Oxford AIMS CDT, 2014-15.</li>
-</ul>
+<h2 id="license">License</h2>
+<pre><code>Copyright (c) 2015 Andrea Vedaldi
+
+Permission is hereby granted, free of charge, to any person
+obtaining a copy of this software and associated documentation
+files (the &quot;Software&quot;), to deal in the Software without
+restriction, including without limitation the rights to use, copy,
+modify, merge, publish, distribute, sublicense, and/or sell copies
+of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be
+included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED &quot;AS IS&quot;, WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+DEALINGS IN THE SOFTWARE.</code></pre>
 <section class="footnotes">
 <hr />
 <ol>
