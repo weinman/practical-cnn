@@ -822,7 +822,7 @@ This is implemented by the `getBatchWithJitter()`  function (note that jittering
 > 
 > 1.  Train a second model, using the jittered data.
 > 2.  Look at the training and validation errors. Is their gap as wide as it was before?
-> 3.  Use the new model to recognise the characters in the sentence by repeating the previous part. Does it work better?
+> 3.  Use the new model to recognize the characters in the sentence by repeating the previous part. Does it work better?
 > 4.  **Advanced.** What else can you change to make the performance even better?
 
 
@@ -860,7 +860,7 @@ im_ = imresize(im_, net.normalization.imageSize(1:2)) ;
 im_ = im_ - net.normalization.averageImage ;
 ```
 
-The code normalises the image in a format compatible with the model `net`. This amounts to: converting the image to `single` format (but with range 0,...,255 rather than [0, 1] as typical in MATLAB), resizing the image to a fixed size, and then subtracting an average image.
+The code normalizes the image in a format compatible with the model `net`. This amounts to: converting the image to `single` format (but with range 0,...,255 rather than [0, 1] as typical in MATLAB), resizing the image to a fixed size, and then subtracting an average image.
 
 It is now possible to call the CNN:
 
@@ -881,23 +881,50 @@ title(sprintf('%s (%d), score %.3f',...
   net.classes.description{best}, best, bestScore)) ;
 ```
 
-That completes this practical.
+### Part 5.3: use the model to classify more images
+
+Try to modify the code to run this model on other stock matlab images
+(e.g., mandrill, cameraman, etc.) and see what labels are produced.
+
+That completes this lab.
 
 ## Links and further work
 
 * The code for this practical is written using the software package [MatConvNet](http://www.vlfeat.org/matconvnet). This is a software library written in MATLAB, C++, and CUDA and is freely available as source code and binary.
-* The ImageNet model is the *VGG very deep 16* of Karen Simonyan and Andrew Zisserman.
+* The ImageNet model is the *VGG very deep 16* of Karen Simonyan and Andrew
+Zisserman.
+* The lab is derived from [practical-cnn](http://github.com/vedaldi/practical-cnn).
 
 ## Acknowledgements
 
 * Beta testing by: Karel Lenc and Carlos Arteta.
 * Bugfixes/typos by: Sun Yushi.
 
-## History
+## License
 
-* Used in the Oxford AIMS CDT, 2016-17.
-* Used in the Oxford AIMS CDT, 2015-16.
-* Used in the Oxford AIMS CDT, 2014-15.
+
+    Copyright (c) 2015 Andrea Vedaldi
+
+    Permission is hereby granted, free of charge, to any person
+    obtaining a copy of this software and associated documentation
+    files (the "Software"), to deal in the Software without
+    restriction, including without limitation the rights to use, copy,
+    modify, merge, publish, distribute, sublicense, and/or sell copies
+    of the Software, and to permit persons to whom the Software is
+    furnished to do so, subject to the following conditions:
+
+    The above copyright notice and this permission notice shall be
+    included in all copies or substantial portions of the Software.
+
+    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+    EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+    MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+    NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+    HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+    WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+    OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+    DEALINGS IN THE SOFTWARE.
+
 
 [^lattice]: A two-dimensional *lattice* is a discrete grid embedded in $R^2$, similar for example to a checkerboard.
 
